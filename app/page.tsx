@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import type React from "react"
+
+import { useState, useMemo, useRef } from "react"
 import { Header } from "@/components/header"
 import { UploadZone } from "@/components/upload-zone"
 import { ExtractedContent } from "@/components/extracted-content"
@@ -12,6 +14,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const totalMatches = useMemo(() => {
     if (!searchQuery.trim() || !extractedText) return 0
@@ -67,19 +70,49 @@ export default function HomePage() {
   }
 
   const handleUploadNewPDF = () => {
-    setExtractedText("")
-    setFileName("")
-    setSearchQuery("")
-    setCurrentMatchIndex(0)
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file && file.type === "application/pdf") {
+      // Reset state first
+      setExtractedText("")
+      setFileName("")
+      setSearchQuery("")
+      setCurrentMatchIndex(0)
+      // Then process new file
+      handleFileUpload(file)
+    }
+    // Reset input value to allow selecting the same file again
+    event.target.value = ""
   }
 
   return (
-    <div className="min-h-screen bg-background transition-theme">
+    <div className="min-h-screen bg-background transition-theme relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-20 animate-pulse-slow"></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-15 animate-pulse-slow"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 gradient-primary rounded-full blur-3xl opacity-10 animate-pulse-slow"
+          style={{ animationDelay: "4s" }}
+        ></div>
+      </div>
+
+      <input ref={fileInputRef} type="file" accept=".pdf" onChange={handleFileInputChange} className="hidden" />
+
       <Header />
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-balance mb-4">Extract and Search PDF Content</h1>
+          <h1 className="text-4xl font-bold text-balance mb-4 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+            Extract and Search PDF Content
+          </h1>
           <p className="text-xl text-muted-foreground text-pretty max-w-2xl mx-auto">
             Upload your PDF documents and instantly extract all text content with powerful search capabilities
           </p>
