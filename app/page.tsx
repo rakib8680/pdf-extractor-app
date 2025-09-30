@@ -7,6 +7,8 @@ import { Header } from "@/components/header"
 import { UploadZone } from "@/components/upload-zone"
 import { ExtractedContent } from "@/components/extracted-content"
 import { SearchBar } from "@/components/search-bar"
+import { LandingContent } from "@/components/landing-content"
+import { Footer } from "@/components/footer"
 
 export default function HomePage() {
   const [extractedText, setExtractedText] = useState<string>("")
@@ -135,7 +137,7 @@ export default function HomePage() {
     }
   }
 
-  const handleGoHome = () => {
+  const handleReset = () => {
     setExtractedText("")
     setFileName("")
     setSearchQuery("")
@@ -158,7 +160,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background transition-theme relative overflow-hidden">
+    <div className="min-h-screen bg-background transition-theme relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-20 animate-pulse-slow"></div>
         <div
@@ -173,20 +175,24 @@ export default function HomePage() {
 
       <input ref={fileInputRef} type="file" accept=".pdf" onChange={handleFileInputChange} className="hidden" />
 
-      <Header showHomeButton={!!extractedText} onHomeClick={handleGoHome} />
+      <Header />
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-balance mb-4 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-            Extract and Search PDF Content
-          </h1>
-          <p className="text-xl text-muted-foreground text-pretty max-w-2xl mx-auto">
-            Upload your PDF documents and instantly extract all text content with powerful search capabilities
-          </p>
-        </div>
-
+      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10 flex-1">
         {!extractedText ? (
-          <UploadZone onFileUpload={handleFileUpload} isProcessing={isProcessing} />
+          <>
+            <div className="text-center mb-12">
+              <h1 className="text-5xl md:text-6xl font-bold text-balance mb-6 bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">
+                Extract and Search PDF Content
+              </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground text-pretty max-w-3xl mx-auto mb-8">
+                Upload your PDF documents and instantly extract all text content with powerful search capabilities
+              </p>
+            </div>
+
+            <UploadZone onFileUpload={handleFileUpload} isProcessing={isProcessing} />
+
+            <LandingContent />
+          </>
         ) : (
           <div className="space-y-6">
             <SearchBar
@@ -197,7 +203,7 @@ export default function HomePage() {
               onNavigateMatch={setCurrentMatchIndex}
               totalMatches={totalMatches}
               onUploadNew={handleUploadNewPDF}
-              onGoHome={handleGoHome}
+              onGoHome={handleReset}
             />
             <ExtractedContent
               text={extractedText}
@@ -208,6 +214,8 @@ export default function HomePage() {
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   )
 }
