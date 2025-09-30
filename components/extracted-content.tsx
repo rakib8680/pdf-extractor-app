@@ -195,13 +195,35 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
 
       selection.removeAllRanges()
       // Try native selectAllChildren first
+      let usedNativeSelection = false
       try {
         selection.selectAllChildren(contentRef.current)
+        usedNativeSelection = true
       } catch {
         // Fallback: use a Range across the container
         const range = document.createRange()
         range.selectNodeContents(contentRef.current)
         selection.addRange(range)
+      }
+
+      // If selection is still empty (Safari/edge cases), temporarily make the node contentEditable and execCommand
+      const selectionEmpty = !selection.anchorNode || !contentRef.current.contains(selection.anchorNode)
+      if (!usedNativeSelection || selectionEmpty) {
+        const node = contentRef.current
+        const prevCE = node.getAttribute("contenteditable")
+        node.setAttribute("contenteditable", "true")
+        node.focus()
+        try {
+          document.execCommand("selectAll")
+        } catch {}
+        // Keep the highlight visible briefly, then restore contentEditable
+        setTimeout(() => {
+          if (prevCE === null) {
+            node.removeAttribute("contenteditable")
+          } else {
+            node.setAttribute("contenteditable", prevCE)
+          }
+        }, 250)
       }
 
       // Ensure the selected area is visible
@@ -456,6 +478,7 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
                 viewMode === "raw"
                   ? "ui-monospace, monospace"
                   : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+              userSelect: "text",
             }}
             dangerouslySetInnerHTML={{ __html: highlightedText }}
           />
