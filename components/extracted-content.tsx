@@ -185,7 +185,7 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
 
     try {
       // Focus the container so the browser visibly highlights the selection
-      contentRef.current.focus({ preventScroll: true })
+      contentRef.current.focus()
 
       const selection = window.getSelection()
       if (!selection) {
@@ -194,7 +194,18 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
       }
 
       selection.removeAllRanges()
-      selection.selectAllChildren(contentRef.current)
+      // Try native selectAllChildren first
+      try {
+        selection.selectAllChildren(contentRef.current)
+      } catch {
+        // Fallback: use a Range across the container
+        const range = document.createRange()
+        range.selectNodeContents(contentRef.current)
+        selection.addRange(range)
+      }
+
+      // Ensure the selected area is visible
+      contentRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
 
       console.log("[v0] Text selected successfully")
 
@@ -436,7 +447,7 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
         <div className="p-8">
           <div
             ref={contentRef}
-            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed selection:bg-primary/30 selection:text-foreground"
+            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed selection:bg-primary/60 selection:text-primary-foreground focus:outline-none select-text"
             tabIndex={-1}
             style={{
               fontSize: viewMode === "compact" ? "14px" : "15px",
