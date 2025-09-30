@@ -22,6 +22,70 @@ export default function HomePage() {
     return (extractedText.match(regex) || []).length
   }, [extractedText, searchQuery])
 
+  const processExtractedText = (rawText: string): string => {
+    // Split into lines
+    const lines = rawText.split("\n")
+    const processedLines: string[] = []
+    let currentParagraph = ""
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim()
+
+      // Skip empty lines
+      if (!line) {
+        if (currentParagraph) {
+          processedLines.push(currentParagraph.trim())
+          currentParagraph = ""
+        }
+        processedLines.push("") // Preserve paragraph breaks
+        continue
+      }
+
+      // Check if this is a page separator
+      if (line.startsWith("--- Page")) {
+        if (currentParagraph) {
+          processedLines.push(currentParagraph.trim())
+          currentParagraph = ""
+        }
+        processedLines.push("")
+        processedLines.push(line)
+        processedLines.push("")
+        continue
+      }
+
+      // Check if line is very short (likely needs to be merged)
+      const isShortLine = line.split(/\s+/).length <= 3 && line.length < 50
+
+      // Check if line ends with sentence-ending punctuation
+      const endsWithPunctuation = /[.!?:;]$/.test(line)
+
+      // Check if next line exists and is also short
+      const nextLine = lines[i + 1]?.trim()
+      const nextIsShort = nextLine && nextLine.split(/\s+/).length <= 3
+
+      if (isShortLine && !endsWithPunctuation && nextLine && !nextLine.startsWith("---")) {
+        // Merge short lines together
+        currentParagraph += (currentParagraph ? " " : "") + line
+      } else {
+        // Add line to current paragraph
+        currentParagraph += (currentParagraph ? " " : "") + line
+
+        // If line ends with punctuation or is long enough, finish the paragraph
+        if (endsWithPunctuation || !nextIsShort || !nextLine) {
+          processedLines.push(currentParagraph.trim())
+          currentParagraph = ""
+        }
+      }
+    }
+
+    // Add any remaining paragraph
+    if (currentParagraph) {
+      processedLines.push(currentParagraph.trim())
+    }
+
+    return processedLines.join("\n")
+  }
+
   const handleFileUpload = async (file: File) => {
     setIsProcessing(true)
     setFileName(file.name)
@@ -54,8 +118,10 @@ export default function HomePage() {
         formattedText = text
       }
 
-      console.log("[v0] Text extraction completed, total length:", formattedText.length)
-      setExtractedText(formattedText.trim())
+      const processedText = processExtractedText(formattedText.trim())
+
+      console.log("[v0] Text extraction completed, total length:", processedText.length)
+      setExtractedText(processedText)
     } catch (error) {
       console.error("[v0] Error extracting PDF:", error)
       alert("Failed to extract PDF content. Please try again with a different PDF file.")
@@ -73,6 +139,13 @@ export default function HomePage() {
     if (fileInputRef.current) {
       fileInputRef.current.click()
     }
+  }
+
+  const handleGoHome = () => {
+    setExtractedText("")
+    setFileName("")
+    setSearchQuery("")
+    setCurrentMatchIndex(0)
   }
 
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,6 +203,7 @@ export default function HomePage() {
               onNavigateMatch={setCurrentMatchIndex}
               totalMatches={totalMatches}
               onUploadNew={handleUploadNewPDF}
+              onGoHome={handleGoHome}
             />
             <ExtractedContent
               text={extractedText}

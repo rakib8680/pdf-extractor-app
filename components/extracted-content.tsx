@@ -39,20 +39,32 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
   const formattedText = useMemo(() => {
     if (!text) return ""
 
-    // Split by double line breaks to detect paragraphs
-    const paragraphs = text.split(/\n\s*\n/)
+    // Split by line breaks
+    const lines = text.split("\n")
+    const formatted: string[] = []
 
-    return paragraphs
-      .map((para) => {
-        const trimmed = para.trim()
-        if (!trimmed) return ""
+    for (const line of lines) {
+      const trimmed = line.trim()
 
-        // Preserve single line breaks within paragraphs
-        const lines = trimmed.split("\n").map((line) => line.trim())
-        return lines.join("\n")
-      })
-      .filter((p) => p)
-      .join("\n\n")
+      // Preserve page separators
+      if (trimmed.startsWith("--- Page")) {
+        formatted.push(
+          `<div class="text-sm font-semibold text-primary/70 my-6 py-2 border-t border-b border-primary/20">${trimmed}</div>`,
+        )
+        continue
+      }
+
+      // Skip empty lines but preserve spacing
+      if (!trimmed) {
+        formatted.push("<br/>")
+        continue
+      }
+
+      // Regular paragraph
+      formatted.push(`<p class="mb-4">${trimmed}</p>`)
+    }
+
+    return formatted.join("")
   }, [text])
 
   const highlightedText = useMemo(() => {
@@ -91,14 +103,16 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
     try {
       await navigator.clipboard.writeText(text)
       toast({
-        title: "Copied to clipboard",
-        description: "The extracted text has been copied to your clipboard.",
+        title: "✓ Copied to clipboard",
+        description: `${text.split(/\s+/).length} words copied successfully.`,
+        duration: 3000,
       })
     } catch (error) {
       toast({
         title: "Failed to copy",
         description: "Could not copy text to clipboard.",
         variant: "destructive",
+        duration: 3000,
       })
     }
   }
@@ -114,22 +128,42 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
     toast({
-      title: "Download started",
-      description: "Your text file is being downloaded.",
+      title: "✓ Download started",
+      description: `${fileName.replace(".pdf", "")}_extracted.txt is being downloaded.`,
+      duration: 3000,
     })
   }
 
   const selectAllText = () => {
     if (contentRef.current) {
-      const range = document.createRange()
-      range.selectNodeContents(contentRef.current)
-      const selection = window.getSelection()
-      selection?.removeAllRanges()
-      selection?.addRange(range)
-      toast({
-        title: "Text selected",
-        description: "All text has been selected. Press Ctrl+C to copy.",
-      })
+      try {
+        const range = document.createRange()
+        range.selectNodeContents(contentRef.current)
+        const selection = window.getSelection()
+        selection?.removeAllRanges()
+        selection?.addRange(range)
+
+        // Visual feedback with toast
+        toast({
+          title: "✓ Text selected",
+          description: `All ${statistics.words.toLocaleString()} words selected. Press Ctrl+C (Cmd+C on Mac) to copy.`,
+          duration: 4000,
+        })
+
+        // Optional: Automatically copy after selection
+        // Uncomment the next 3 lines if you want auto-copy on select all
+        // setTimeout(() => {
+        //   document.execCommand('copy')
+        // }, 100)
+      } catch (error) {
+        console.error("[v0] Error selecting text:", error)
+        toast({
+          title: "Selection failed",
+          description: "Could not select text. Please try manually selecting.",
+          variant: "destructive",
+          duration: 3000,
+        })
+      }
     }
   }
 
@@ -293,10 +327,10 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
         <div className="p-8">
           <div
             ref={contentRef}
-            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed whitespace-pre-wrap selection:bg-primary/20 selection:text-foreground"
+            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed whitespace-pre-wrap selection:bg-primary/30 selection:text-foreground"
             style={{
               fontSize: "15px",
-              lineHeight: "1.7",
+              lineHeight: "1.8",
               fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             }}
             dangerouslySetInnerHTML={{ __html: highlightedText }}

@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, X, FileText, ChevronUp, ChevronDown, Upload } from "lucide-react"
+import { Search, X, FileText, ChevronUp, ChevronDown, Upload, Home } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -15,6 +15,7 @@ interface SearchBarProps {
   onNavigateMatch: (index: number) => void
   totalMatches: number
   onUploadNew: () => void
+  onGoHome: () => void // Added onGoHome prop for home button
 }
 
 export function SearchBar({
@@ -25,6 +26,7 @@ export function SearchBar({
   onNavigateMatch,
   totalMatches,
   onUploadNew,
+  onGoHome, // Added onGoHome parameter
 }: SearchBarProps) {
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -73,15 +75,28 @@ export function SearchBar({
             <FileText className="h-4 w-4" />
             <span className="font-medium">{fileName}</span>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onUploadNew}
-            className="gap-2 transition-theme bg-transparent backdrop-blur-sm border-primary/20 hover:bg-primary/10 cursor-pointer"
-          >
-            <Upload className="h-4 w-4" />
-            Upload New PDF
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onGoHome}
+              className="gap-2 transition-theme bg-transparent backdrop-blur-sm border-primary/20 hover:bg-primary/10 cursor-pointer"
+              title="Back to upload"
+            >
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onUploadNew}
+              className="gap-2 transition-theme bg-transparent backdrop-blur-sm border-primary/20 hover:bg-primary/10 cursor-pointer"
+              title="Upload another PDF"
+            >
+              <Upload className="h-4 w-4" />
+              Upload New
+            </Button>
+          </div>
         </div>
 
         <div className="relative">
