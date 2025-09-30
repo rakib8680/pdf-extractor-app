@@ -3,7 +3,7 @@
 import { useMemo, useEffect, useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Copy, Download, FileText, Clock, Type, Printer, CheckCheck } from "lucide-react"
+import { Copy, Download, FileText, Clock, Type, Printer, CheckCheck, AlignLeft, List, Maximize2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface ExtractedContentProps {
@@ -17,6 +17,8 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
   const { toast } = useToast()
   const contentRef = useRef<HTMLDivElement>(null)
   const [showStats, setShowStats] = useState(true)
+  const [viewMode, setViewMode] = useState<"formatted" | "raw" | "compact">("formatted")
+  const [showLineNumbers, setShowLineNumbers] = useState(false)
 
   const statistics = useMemo(() => {
     const words = text.trim().split(/\s+/).length
@@ -39,33 +41,57 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
   const formattedText = useMemo(() => {
     if (!text) return ""
 
-    // Split by line breaks
+    if (viewMode === "raw") {
+      return `<pre class="whitespace-pre-wrap font-mono text-sm">${text}</pre>`
+    }
+
+    if (viewMode === "compact") {
+      const compactText = text.replace(/\n\s*\n/g, "\n").trim()
+      return `<div class="space-y-2">${compactText
+        .split("\n")
+        .map((line) => {
+          if (line.startsWith("--- Page")) {
+            return `<div class="text-sm font-semibold text-primary/70 my-4 py-2 border-t border-b border-primary/20">${line}</div>`
+          }
+          return line.trim() ? `<p class="mb-2">${line.trim()}</p>` : ""
+        })
+        .join("")}</div>`
+    }
+
     const lines = text.split("\n")
     const formatted: string[] = []
+    let lineNumber = 1
 
     for (const line of lines) {
       const trimmed = line.trim()
 
-      // Preserve page separators
       if (trimmed.startsWith("--- Page")) {
         formatted.push(
-          `<div class="text-sm font-semibold text-primary/70 my-6 py-2 border-t border-b border-primary/20">${trimmed}</div>`,
+          `<div class="text-sm font-semibold text-primary/70 my-6 py-2 border-t border-b border-primary/20 flex items-center gap-2">
+            ${showLineNumbers ? `<span class="text-muted-foreground text-xs w-12">${lineNumber}</span>` : ""}
+            <span>${trimmed}</span>
+          </div>`,
         )
+        lineNumber++
         continue
       }
 
-      // Skip empty lines but preserve spacing
       if (!trimmed) {
         formatted.push("<br/>")
         continue
       }
 
-      // Regular paragraph
-      formatted.push(`<p class="mb-4">${trimmed}</p>`)
+      formatted.push(
+        `<p class="mb-4 flex ${showLineNumbers ? "gap-4" : ""}">
+          ${showLineNumbers ? `<span class="text-muted-foreground text-xs w-12 flex-shrink-0 select-none">${lineNumber}</span>` : ""}
+          <span class="flex-1">${trimmed}</span>
+        </p>`,
+      )
+      lineNumber++
     }
 
     return formatted.join("")
-  }, [text])
+  }, [text, viewMode, showLineNumbers])
 
   const highlightedText = useMemo(() => {
     if (!searchQuery.trim()) return formattedText
@@ -100,16 +126,19 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
   }, [currentMatchIndex, searchQuery])
 
   const copyToClipboard = async () => {
+    console.log("[v0] Copy button clicked")
     try {
       await navigator.clipboard.writeText(text)
+      console.log("[v0] Text copied successfully")
       toast({
-        title: "✓ Copied to clipboard",
-        description: `${text.split(/\s+/).length} words copied successfully.`,
+        title: "✓ Copied!",
+        description: `${text.split(/\s+/).length.toLocaleString()} words copied to clipboard.`,
         duration: 3000,
       })
     } catch (error) {
+      console.error("[v0] Copy failed:", error)
       toast({
-        title: "Failed to copy",
+        title: "❌ Copy failed",
         description: "Could not copy text to clipboard.",
         variant: "destructive",
         duration: 3000,
@@ -118,52 +147,91 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
   }
 
   const downloadText = () => {
-    const blob = new Blob([text], { type: "text/plain" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${fileName.replace(".pdf", "")}_extracted.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    toast({
-      title: "✓ Download started",
-      description: `${fileName.replace(".pdf", "")}_extracted.txt is being downloaded.`,
-      duration: 3000,
-    })
+    console.log("[v0] Download button clicked")
+    try {
+      const blob = new Blob([text], { type: "text/plain" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${fileName.replace(".pdf", "")}_extracted.txt`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      console.log("[v0] Download started")
+      toast({
+        title: "✓ Downloaded!",
+        description: `${fileName.replace(".pdf", "")}_extracted.txt`,
+        duration: 3000,
+      })
+    } catch (error) {
+      console.error("[v0] Download failed:", error)
+      toast({
+        title: "❌ Download failed",
+        description: "Could not download the file.",
+        variant: "destructive",
+        duration: 3000,
+      })
+    }
   }
 
   const selectAllText = () => {
-    if (contentRef.current) {
-      try {
-        const range = document.createRange()
-        range.selectNodeContents(contentRef.current)
-        const selection = window.getSelection()
-        selection?.removeAllRanges()
-        selection?.addRange(range)
+    console.log("[v0] Select All button clicked")
 
-        // Visual feedback with toast
-        toast({
-          title: "✓ Text selected",
-          description: `All ${statistics.words.toLocaleString()} words selected. Press Ctrl+C (Cmd+C on Mac) to copy.`,
-          duration: 4000,
-        })
+    if (!contentRef.current) {
+      console.error("[v0] Content ref not found")
+      return
+    }
 
-        // Optional: Automatically copy after selection
-        // Uncomment the next 3 lines if you want auto-copy on select all
-        // setTimeout(() => {
-        //   document.execCommand('copy')
-        // }, 100)
-      } catch (error) {
-        console.error("[v0] Error selecting text:", error)
-        toast({
-          title: "Selection failed",
-          description: "Could not select text. Please try manually selecting.",
-          variant: "destructive",
-          duration: 3000,
-        })
+    try {
+      const selection = window.getSelection()
+      if (!selection) {
+        console.error("[v0] Window selection not available")
+        throw new Error("Selection API not available")
       }
+
+      selection.removeAllRanges()
+
+      const range = document.createRange()
+      range.selectNodeContents(contentRef.current)
+      selection.addRange(range)
+
+      console.log("[v0] Text selected successfully")
+
+      toast({
+        title: "✓ Text Selected!",
+        description: `All ${statistics.words.toLocaleString()} words are now selected. Press Ctrl+C (⌘+C on Mac) to copy.`,
+        duration: 4000,
+      })
+
+      setTimeout(async () => {
+        try {
+          await navigator.clipboard.writeText(text)
+          console.log("[v0] Auto-copy after select all successful")
+        } catch (e) {
+          console.log("[v0] Auto-copy not available, user needs to manually copy")
+        }
+      }, 100)
+    } catch (error) {
+      console.error("[v0] Select all failed:", error)
+
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          toast({
+            title: "✓ Copied!",
+            description: "Text selection not available, but content was copied to clipboard.",
+            duration: 3000,
+          })
+        })
+        .catch(() => {
+          toast({
+            title: "❌ Selection failed",
+            description: "Could not select or copy text. Please try selecting manually.",
+            variant: "destructive",
+            duration: 3000,
+          })
+        })
     }
   }
 
@@ -219,6 +287,47 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1 border border-border rounded-lg p-1">
+              <Button
+                variant={viewMode === "formatted" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("formatted")}
+                className="h-8 px-3 cursor-pointer"
+                title="Formatted view with paragraphs"
+              >
+                <AlignLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "compact" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("compact")}
+                className="h-8 px-3 cursor-pointer"
+                title="Compact view with minimal spacing"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "raw" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("raw")}
+                className="h-8 px-3 cursor-pointer"
+                title="Raw text view"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <Button
+              variant={showLineNumbers ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowLineNumbers(!showLineNumbers)}
+              className="gap-2 cursor-pointer"
+              title="Toggle line numbers"
+            >
+              <Type className="h-4 w-4" />
+              {showLineNumbers ? "Hide" : "Show"} Lines
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -327,11 +436,14 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
         <div className="p-8">
           <div
             ref={contentRef}
-            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed whitespace-pre-wrap selection:bg-primary/30 selection:text-foreground"
+            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed selection:bg-primary/30 selection:text-foreground"
             style={{
-              fontSize: "15px",
-              lineHeight: "1.8",
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+              fontSize: viewMode === "compact" ? "14px" : "15px",
+              lineHeight: viewMode === "compact" ? "1.6" : "1.8",
+              fontFamily:
+                viewMode === "raw"
+                  ? "ui-monospace, monospace"
+                  : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             }}
             dangerouslySetInnerHTML={{ __html: highlightedText }}
           />

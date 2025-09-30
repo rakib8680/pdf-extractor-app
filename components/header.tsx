@@ -1,10 +1,15 @@
 "use client"
 
-import { FileText, Github, Sun, Moon } from "lucide-react"
+import { FileText, Github, Sun, Moon, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/hooks/use-theme"
 
-export function Header() {
+interface HeaderProps {
+  showHomeButton?: boolean
+  onHomeClick?: () => void
+}
+
+export function Header({ showHomeButton = false, onHomeClick }: HeaderProps) {
   const { theme, toggleTheme } = useTheme()
 
   return (
@@ -21,19 +26,31 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          {showHomeButton && onHomeClick && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onHomeClick}
+              className="gap-2 cursor-pointer"
+              title="Go back to upload"
+            >
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleTheme}
-            className="text-muted-foreground transition-theme"
+            className="text-muted-foreground transition-theme cursor-pointer"
             title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground transition-theme">
+          <Button variant="ghost" size="sm" className="text-muted-foreground transition-theme cursor-pointer">
             Help
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground transition-theme">
+          <Button variant="ghost" size="sm" className="text-muted-foreground transition-theme cursor-pointer">
             <Github className="h-4 w-4 mr-2" />
             GitHub
           </Button>

@@ -23,7 +23,6 @@ export default function HomePage() {
   }, [extractedText, searchQuery])
 
   const processExtractedText = (rawText: string): string => {
-    // Split into lines
     const lines = rawText.split("\n")
     const processedLines: string[] = []
     let currentParagraph = ""
@@ -31,17 +30,15 @@ export default function HomePage() {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim()
 
-      // Skip empty lines
       if (!line) {
         if (currentParagraph) {
           processedLines.push(currentParagraph.trim())
           currentParagraph = ""
         }
-        processedLines.push("") // Preserve paragraph breaks
+        processedLines.push("")
         continue
       }
 
-      // Check if this is a page separator
       if (line.startsWith("--- Page")) {
         if (currentParagraph) {
           processedLines.push(currentParagraph.trim())
@@ -53,32 +50,29 @@ export default function HomePage() {
         continue
       }
 
-      // Check if line is very short (likely needs to be merged)
-      const isShortLine = line.split(/\s+/).length <= 3 && line.length < 50
-
-      // Check if line ends with sentence-ending punctuation
+      const wordCount = line.split(/\s+/).length
+      const isVeryShortLine = wordCount <= 4 && line.length < 60
       const endsWithPunctuation = /[.!?:;]$/.test(line)
+      const endsWithComma = /[,]$/.test(line)
 
-      // Check if next line exists and is also short
       const nextLine = lines[i + 1]?.trim()
-      const nextIsShort = nextLine && nextLine.split(/\s+/).length <= 3
+      const nextIsShort = nextLine && nextLine.split(/\s+/).length <= 4
+      const nextStartsWithCapital = nextLine && /^[A-Z]/.test(nextLine)
 
-      if (isShortLine && !endsWithPunctuation && nextLine && !nextLine.startsWith("---")) {
-        // Merge short lines together
+      // Merge very short lines unless they end with sentence punctuation
+      if (isVeryShortLine && !endsWithPunctuation && nextLine && !nextLine.startsWith("---")) {
+        currentParagraph += (currentParagraph ? " " : "") + line
+      } else if (endsWithComma || (!endsWithPunctuation && !nextStartsWithCapital && nextLine)) {
+        // Continue paragraph if line ends with comma or doesn't end with punctuation
         currentParagraph += (currentParagraph ? " " : "") + line
       } else {
-        // Add line to current paragraph
+        // Finish paragraph
         currentParagraph += (currentParagraph ? " " : "") + line
-
-        // If line ends with punctuation or is long enough, finish the paragraph
-        if (endsWithPunctuation || !nextIsShort || !nextLine) {
-          processedLines.push(currentParagraph.trim())
-          currentParagraph = ""
-        }
+        processedLines.push(currentParagraph.trim())
+        currentParagraph = ""
       }
     }
 
-    // Add any remaining paragraph
     if (currentParagraph) {
       processedLines.push(currentParagraph.trim())
     }
@@ -179,7 +173,7 @@ export default function HomePage() {
 
       <input ref={fileInputRef} type="file" accept=".pdf" onChange={handleFileInputChange} className="hidden" />
 
-      <Header />
+      <Header showHomeButton={!!extractedText} onHomeClick={handleGoHome} />
 
       <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
         <div className="text-center mb-12">
