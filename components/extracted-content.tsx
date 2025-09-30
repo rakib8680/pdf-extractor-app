@@ -1,32 +1,50 @@
-"use client"
+"use client";
 
-import { useMemo, useEffect, useRef, useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Copy, Download, FileText, Clock, Type, Printer, CheckCheck, AlignLeft, List, Maximize2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useMemo, useEffect, useRef, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Copy,
+  Download,
+  FileText,
+  Clock,
+  Type,
+  Printer,
+  CheckCheck,
+  AlignLeft,
+  List,
+  Maximize2,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExtractedContentProps {
-  text: string
-  searchQuery: string
-  fileName: string
-  currentMatchIndex: number
+  text: string;
+  searchQuery: string;
+  fileName: string;
+  currentMatchIndex: number;
 }
 
-export function ExtractedContent({ text, searchQuery, fileName, currentMatchIndex }: ExtractedContentProps) {
-  const { toast } = useToast()
-  const contentRef = useRef<HTMLDivElement>(null)
-  const [showStats, setShowStats] = useState(true)
-  const [viewMode, setViewMode] = useState<"formatted" | "raw" | "compact">("formatted")
-  const [showLineNumbers, setShowLineNumbers] = useState(false)
+export function ExtractedContent({
+  text,
+  searchQuery,
+  fileName,
+  currentMatchIndex,
+}: ExtractedContentProps) {
+  const { toast } = useToast();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [showStats, setShowStats] = useState(true);
+  const [viewMode, setViewMode] = useState<"formatted" | "raw" | "compact">(
+    "formatted"
+  );
+  const [showLineNumbers, setShowLineNumbers] = useState(false);
 
   const statistics = useMemo(() => {
-    const words = text.trim().split(/\s+/).length
-    const characters = text.length
-    const charactersNoSpaces = text.replace(/\s/g, "").length
-    const lines = text.split("\n").length
-    const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim()).length
-    const readingTime = Math.ceil(words / 200) // Average reading speed: 200 words per minute
+    const words = text.trim().split(/\s+/).length;
+    const characters = text.length;
+    const charactersNoSpaces = text.replace(/\s/g, "").length;
+    const lines = text.split("\n").length;
+    const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim()).length;
+    const readingTime = Math.ceil(words / 200); // Average reading speed: 200 words per minute
 
     return {
       words,
@@ -35,208 +53,241 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
       lines,
       paragraphs,
       readingTime,
-    }
-  }, [text])
+    };
+  }, [text]);
 
   const formattedText = useMemo(() => {
-    if (!text) return ""
+    if (!text) return "";
 
     if (viewMode === "raw") {
-      return `<pre class="whitespace-pre-wrap font-mono text-sm">${text}</pre>`
+      return `<pre class="whitespace-pre-wrap font-mono text-sm">${text}</pre>`;
     }
 
     if (viewMode === "compact") {
-      const compactText = text.replace(/\n\s*\n/g, "\n").trim()
+      const compactText = text.replace(/\n\s*\n/g, "\n").trim();
       return `<div class="space-y-2">${compactText
         .split("\n")
         .map((line) => {
           if (line.startsWith("--- Page")) {
-            return `<div class="text-sm font-semibold text-primary/70 my-4 py-2 border-t border-b border-primary/20">${line}</div>`
+            return `<div class="text-sm font-semibold text-primary/70 my-4 py-2 border-t border-b border-primary/20">${line}</div>`;
           }
-          return line.trim() ? `<p class="mb-2">${line.trim()}</p>` : ""
+          return line.trim() ? `<p class="mb-2">${line.trim()}</p>` : "";
         })
-        .join("")}</div>`
+        .join("")}</div>`;
     }
 
-    const lines = text.split("\n")
-    const formatted: string[] = []
-    let lineNumber = 1
+    const lines = text.split("\n");
+    const formatted: string[] = [];
+    let lineNumber = 1;
 
     for (const line of lines) {
-      const trimmed = line.trim()
+      const trimmed = line.trim();
 
       if (trimmed.startsWith("--- Page")) {
         formatted.push(
           `<div class="text-sm font-semibold text-primary/70 my-6 py-2 border-t border-b border-primary/20 flex items-center gap-2">
-            ${showLineNumbers ? `<span class="text-muted-foreground text-xs w-12">${lineNumber}</span>` : ""}
+            ${
+              showLineNumbers
+                ? `<span class="text-muted-foreground text-xs w-12">${lineNumber}</span>`
+                : ""
+            }
             <span>${trimmed}</span>
-          </div>`,
-        )
-        lineNumber++
-        continue
+          </div>`
+        );
+        lineNumber++;
+        continue;
       }
 
       if (!trimmed) {
-        formatted.push("<br/>")
-        continue
+        formatted.push("<br/>");
+        continue;
       }
 
       formatted.push(
         `<p class="mb-4 flex ${showLineNumbers ? "gap-4" : ""}">
-          ${showLineNumbers ? `<span class="text-muted-foreground text-xs w-12 flex-shrink-0 select-none">${lineNumber}</span>` : ""}
+          ${
+            showLineNumbers
+              ? `<span class="text-muted-foreground text-xs w-12 flex-shrink-0 select-none">${lineNumber}</span>`
+              : ""
+          }
           <span class="flex-1">${trimmed}</span>
-        </p>`,
-      )
-      lineNumber++
+        </p>`
+      );
+      lineNumber++;
     }
 
-    return formatted.join("")
-  }, [text, viewMode, showLineNumbers])
+    return formatted.join("");
+  }, [text, viewMode, showLineNumbers]);
 
   const highlightedText = useMemo(() => {
-    if (!searchQuery.trim()) return formattedText
+    if (!searchQuery.trim()) return formattedText;
 
-    const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")})`, "gi")
+    const regex = new RegExp(
+      `(${searchQuery.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")})`,
+      "gi"
+    );
 
-    let matchCount = 0
+    let matchCount = 0;
     const highlighted = formattedText.replace(regex, (match: string) => {
-      const isCurrentMatch = matchCount === currentMatchIndex
+      const isCurrentMatch = matchCount === currentMatchIndex;
       const className = isCurrentMatch
         ? "bg-primary text-primary-foreground px-1 rounded font-bold ring-2 ring-primary/50 shadow-lg"
-        : "bg-primary/20 text-primary-foreground px-1 rounded"
+        : "bg-primary/20 text-primary-foreground px-1 rounded";
 
-      const result = `<mark class="${className}" data-match-index="${matchCount}">${match}</mark>`
-      matchCount++
-      return result
-    })
+      const result = `<mark class="${className}" data-match-index="${matchCount}">${match}</mark>`;
+      matchCount++;
+      return result;
+    });
 
-    return highlighted
-  }, [formattedText, searchQuery, currentMatchIndex])
+    return highlighted;
+  }, [formattedText, searchQuery, currentMatchIndex]);
 
   useEffect(() => {
     if (searchQuery && contentRef.current) {
-      const currentMatchElement = contentRef.current.querySelector(`[data-match-index="${currentMatchIndex}"]`)
+      const currentMatchElement = contentRef.current.querySelector(
+        `[data-match-index="${currentMatchIndex}"]`
+      );
       if (currentMatchElement) {
         currentMatchElement.scrollIntoView({
           behavior: "smooth",
           block: "center",
-        })
+        });
       }
     }
-  }, [currentMatchIndex, searchQuery])
+  }, [currentMatchIndex, searchQuery]);
 
   const copyToClipboard = async () => {
-    console.log("[v0] Copy button clicked")
+    console.log("[v0] Copy button clicked");
     try {
-      await navigator.clipboard.writeText(text)
-      console.log("[v0] Text copied successfully")
+      await navigator.clipboard.writeText(text);
+      console.log("[v0] Text copied successfully");
       toast({
         title: "✓ Copied!",
-        description: `${text.split(/\s+/).length.toLocaleString()} words copied to clipboard.`,
+        description: `${text
+          .split(/\s+/)
+          .length.toLocaleString()} words copied to clipboard.`,
         duration: 3000,
-      })
+      });
     } catch (error) {
-      console.error("[v0] Copy failed:", error)
+      console.error("[v0] Copy failed:", error);
       toast({
         title: "❌ Copy failed",
         description: "Could not copy text to clipboard.",
         variant: "destructive",
         duration: 3000,
-      })
+      });
     }
-  }
+  };
 
   const downloadText = () => {
-    console.log("[v0] Download button clicked")
+    console.log("[v0] Download button clicked");
     try {
-      const blob = new Blob([text], { type: "text/plain" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `${fileName.replace(".pdf", "")}_extracted.txt`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      console.log("[v0] Download started")
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${fileName.replace(".pdf", "")}_extracted.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      console.log("[v0] Download started");
       toast({
         title: "✓ Downloaded!",
         description: `${fileName.replace(".pdf", "")}_extracted.txt`,
         duration: 3000,
-      })
+      });
     } catch (error) {
-      console.error("[v0] Download failed:", error)
+      console.error("[v0] Download failed:", error);
       toast({
         title: "❌ Download failed",
         description: "Could not download the file.",
         variant: "destructive",
         duration: 3000,
-      })
+      });
     }
-  }
+  };
 
   const selectAllText = () => {
-    console.log("[v0] Select All button clicked")
+    console.log("[v0] Select All button clicked");
 
     if (!contentRef.current) {
-      console.error("[v0] Content ref not found")
-      return
+      console.error("[v0] Content ref not found");
+      return;
     }
 
     try {
       // Focus the container so the browser visibly highlights the selection
-      contentRef.current.focus({ preventScroll: true })
+      contentRef.current.focus();
 
-      const selection = window.getSelection()
+      const selection = window.getSelection();
       if (!selection) {
-        console.error("[v0] Window selection not available")
-        throw new Error("Selection API not available")
+        console.error("[v0] Window selection not available");
+        throw new Error("Selection API not available");
       }
 
-      selection.removeAllRanges()
-      selection.selectAllChildren(contentRef.current)
+      selection.removeAllRanges();
+      // Try native selectAllChildren first
+      try {
+        selection.selectAllChildren(contentRef.current);
+      } catch {
+        // Fallback: use a Range across the container
+        const range = document.createRange();
+        range.selectNodeContents(contentRef.current);
+        selection.addRange(range);
+      }
 
-      console.log("[v0] Text selected successfully")
+      // Ensure the selected area is visible
+      contentRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      console.log("[v0] Text selected successfully");
 
       toast({
         title: "✓ Text Selected!",
         description: `All ${statistics.words.toLocaleString()} words are now selected. Press Ctrl+C (⌘+C on Mac) to copy.`,
         duration: 4000,
-      })
+      });
 
       setTimeout(async () => {
         try {
-          await navigator.clipboard.writeText(text)
-          console.log("[v0] Auto-copy after select all successful")
+          await navigator.clipboard.writeText(text);
+          console.log("[v0] Auto-copy after select all successful");
         } catch (e) {
-          console.log("[v0] Auto-copy not available, user needs to manually copy")
+          console.log(
+            "[v0] Auto-copy not available, user needs to manually copy"
+          );
         }
-      }, 100)
+      }, 100);
     } catch (error) {
-      console.error("[v0] Select all failed:", error)
+      console.error("[v0] Select all failed:", error);
 
       navigator.clipboard
         .writeText(text)
         .then(() => {
           toast({
             title: "✓ Copied!",
-            description: "Text selection not available, but content was copied to clipboard.",
+            description:
+              "Text selection not available, but content was copied to clipboard.",
             duration: 3000,
-          })
+          });
         })
         .catch(() => {
           toast({
             title: "❌ Selection failed",
-            description: "Could not select or copy text. Please try selecting manually.",
+            description:
+              "Could not select or copy text. Please try selecting manually.",
             variant: "destructive",
             duration: 3000,
-          })
-        })
+          });
+        });
     }
-  }
+  };
 
   const printText = () => {
-    const printWindow = window.open("", "_blank")
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
         <!DOCTYPE html>
@@ -271,18 +322,20 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
             <div class="content">${formattedText}</div>
           </body>
         </html>
-      `)
-      printWindow.document.close()
-      printWindow.print()
+      `);
+      printWindow.document.close();
+      printWindow.print();
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="space-y-1">
-            <h2 className="text-2xl font-semibold tracking-tight">Extracted Content</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Extracted Content
+            </h2>
             <p className="text-sm text-muted-foreground">From {fileName}</p>
           </div>
 
@@ -390,30 +443,42 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Words</p>
-                <p className="text-lg font-semibold">{statistics.words.toLocaleString()}</p>
+                <p className="text-lg font-semibold">
+                  {statistics.words.toLocaleString()}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Characters</p>
-                <p className="text-lg font-semibold">{statistics.characters.toLocaleString()}</p>
+                <p className="text-lg font-semibold">
+                  {statistics.characters.toLocaleString()}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">No Spaces</p>
-                <p className="text-lg font-semibold">{statistics.charactersNoSpaces.toLocaleString()}</p>
+                <p className="text-lg font-semibold">
+                  {statistics.charactersNoSpaces.toLocaleString()}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Lines</p>
-                <p className="text-lg font-semibold">{statistics.lines.toLocaleString()}</p>
+                <p className="text-lg font-semibold">
+                  {statistics.lines.toLocaleString()}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Paragraphs</p>
-                <p className="text-lg font-semibold">{statistics.paragraphs.toLocaleString()}</p>
+                <p className="text-lg font-semibold">
+                  {statistics.paragraphs.toLocaleString()}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   Read Time
                 </p>
-                <p className="text-lg font-semibold">{statistics.readingTime} min</p>
+                <p className="text-lg font-semibold">
+                  {statistics.readingTime} min
+                </p>
               </div>
             </div>
           </Card>
@@ -436,7 +501,7 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
         <div className="p-8">
           <div
             ref={contentRef}
-            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed selection:bg-primary/30 selection:text-foreground"
+            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed selection:bg-primary/60 selection:text-primary-foreground focus:outline-none select-text"
             tabIndex={-1}
             style={{
               fontSize: viewMode === "compact" ? "14px" : "15px",
@@ -451,5 +516,5 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
         </div>
       </Card>
     </div>
-  )
+  );
 }
