@@ -99,7 +99,7 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
     const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")})`, "gi")
 
     let matchCount = 0
-    const highlighted = formattedText.replace(regex, (match) => {
+    const highlighted = formattedText.replace(regex, (match: string) => {
       const isCurrentMatch = matchCount === currentMatchIndex
       const className = isCurrentMatch
         ? "bg-primary text-primary-foreground px-1 rounded font-bold ring-2 ring-primary/50 shadow-lg"
@@ -184,6 +184,9 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
     }
 
     try {
+      // Focus the container so the browser visibly highlights the selection
+      contentRef.current.focus({ preventScroll: true })
+
       const selection = window.getSelection()
       if (!selection) {
         console.error("[v0] Window selection not available")
@@ -191,10 +194,7 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
       }
 
       selection.removeAllRanges()
-
-      const range = document.createRange()
-      range.selectNodeContents(contentRef.current)
-      selection.addRange(range)
+      selection.selectAllChildren(contentRef.current)
 
       console.log("[v0] Text selected successfully")
 
@@ -437,6 +437,7 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
           <div
             ref={contentRef}
             className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed selection:bg-primary/30 selection:text-foreground"
+            tabIndex={-1}
             style={{
               fontSize: viewMode === "compact" ? "14px" : "15px",
               lineHeight: viewMode === "compact" ? "1.6" : "1.8",
