@@ -1,9 +1,9 @@
 "use client"
 
-import { useMemo, useEffect, useRef } from "react"
+import { useMemo, useEffect, useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Copy, Download } from "lucide-react"
+import { Copy, Download, FileText, Clock, Type, Printer, CheckCheck } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface ExtractedContentProps {
@@ -16,14 +16,52 @@ interface ExtractedContentProps {
 export function ExtractedContent({ text, searchQuery, fileName, currentMatchIndex }: ExtractedContentProps) {
   const { toast } = useToast()
   const contentRef = useRef<HTMLDivElement>(null)
+  const [showStats, setShowStats] = useState(true)
+
+  const statistics = useMemo(() => {
+    const words = text.trim().split(/\s+/).length
+    const characters = text.length
+    const charactersNoSpaces = text.replace(/\s/g, "").length
+    const lines = text.split("\n").length
+    const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim()).length
+    const readingTime = Math.ceil(words / 200) // Average reading speed: 200 words per minute
+
+    return {
+      words,
+      characters,
+      charactersNoSpaces,
+      lines,
+      paragraphs,
+      readingTime,
+    }
+  }, [text])
+
+  const formattedText = useMemo(() => {
+    if (!text) return ""
+
+    // Split by double line breaks to detect paragraphs
+    const paragraphs = text.split(/\n\s*\n/)
+
+    return paragraphs
+      .map((para) => {
+        const trimmed = para.trim()
+        if (!trimmed) return ""
+
+        // Preserve single line breaks within paragraphs
+        const lines = trimmed.split("\n").map((line) => line.trim())
+        return lines.join("\n")
+      })
+      .filter((p) => p)
+      .join("\n\n")
+  }, [text])
 
   const highlightedText = useMemo(() => {
-    if (!searchQuery.trim()) return text
+    if (!searchQuery.trim()) return formattedText
 
     const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")})`, "gi")
 
     let matchCount = 0
-    const highlighted = text.replace(regex, (match) => {
+    const highlighted = formattedText.replace(regex, (match) => {
       const isCurrentMatch = matchCount === currentMatchIndex
       const className = isCurrentMatch
         ? "bg-primary text-primary-foreground px-1 rounded font-bold ring-2 ring-primary/50 shadow-lg"
@@ -35,7 +73,7 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
     })
 
     return highlighted
-  }, [text, searchQuery, currentMatchIndex])
+  }, [formattedText, searchQuery, currentMatchIndex])
 
   useEffect(() => {
     if (searchQuery && contentRef.current) {
@@ -75,33 +113,195 @@ export function ExtractedContent({ text, searchQuery, fileName, currentMatchInde
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    toast({
+      title: "Download started",
+      description: "Your text file is being downloaded.",
+    })
+  }
+
+  const selectAllText = () => {
+    if (contentRef.current) {
+      const range = document.createRange()
+      range.selectNodeContents(contentRef.current)
+      const selection = window.getSelection()
+      selection?.removeAllRanges()
+      selection?.addRange(range)
+      toast({
+        title: "Text selected",
+        description: "All text has been selected. Press Ctrl+C to copy.",
+      })
+    }
+  }
+
+  const printText = () => {
+    const printWindow = window.open("", "_blank")
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${fileName}</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                line-height: 1.6;
+                max-width: 800px;
+                margin: 40px auto;
+                padding: 20px;
+                color: #333;
+              }
+              h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+                color: #000;
+              }
+              .content {
+                white-space: pre-wrap;
+                font-size: 14px;
+              }
+              @media print {
+                body { margin: 0; padding: 20px; }
+              }
+            </style>
+          </head>
+          <body>
+            <h1>${fileName}</h1>
+            <div class="content">${formattedText}</div>
+          </body>
+        </html>
+      `)
+      printWindow.document.close()
+      printWindow.print()
+    }
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold">Extracted Content</h2>
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-semibold tracking-tight">Extracted Content</h2>
+            <p className="text-sm text-muted-foreground">From {fileName}</p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={selectAllText}
+              className="gap-2 bg-transparent cursor-pointer"
+              title="Select all text"
+            >
+              <CheckCheck className="h-4 w-4" />
+              Select All
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={copyToClipboard}
+              className="gap-2 bg-transparent cursor-pointer"
+              title="Copy to clipboard"
+            >
+              <Copy className="h-4 w-4" />
+              Copy
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={downloadText}
+              className="gap-2 bg-transparent cursor-pointer"
+              title="Download as text file"
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={printText}
+              className="gap-2 bg-transparent cursor-pointer"
+              title="Print document"
+            >
+              <Printer className="h-4 w-4" />
+              Print
+            </Button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={copyToClipboard} className="gap-2 bg-transparent">
-            <Copy className="h-4 w-4" />
-            Copy
+        {showStats && (
+          <Card className="p-4 bg-accent/30 backdrop-blur-sm border-primary/10">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                Document Statistics
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowStats(false)}
+                className="h-6 text-xs cursor-pointer"
+              >
+                Hide
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Words</p>
+                <p className="text-lg font-semibold">{statistics.words.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Characters</p>
+                <p className="text-lg font-semibold">{statistics.characters.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">No Spaces</p>
+                <p className="text-lg font-semibold">{statistics.charactersNoSpaces.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Lines</p>
+                <p className="text-lg font-semibold">{statistics.lines.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Paragraphs</p>
+                <p className="text-lg font-semibold">{statistics.paragraphs.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Read Time
+                </p>
+                <p className="text-lg font-semibold">{statistics.readingTime} min</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {!showStats && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowStats(true)}
+            className="gap-2 bg-transparent cursor-pointer"
+          >
+            <Type className="h-4 w-4" />
+            Show Statistics
           </Button>
-          <Button variant="outline" size="sm" onClick={downloadText} className="gap-2 bg-transparent">
-            <Download className="h-4 w-4" />
-            Download
-          </Button>
-        </div>
+        )}
       </div>
 
-      <Card className="p-6">
-        <div
-          ref={contentRef}
-          className="prose prose-invert max-w-none text-sm leading-relaxed whitespace-pre-wrap font-mono"
-          dangerouslySetInnerHTML={{ __html: highlightedText }}
-        />
+      <Card className="overflow-hidden backdrop-blur-sm bg-card/50 border-primary/10">
+        <div className="p-8">
+          <div
+            ref={contentRef}
+            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed whitespace-pre-wrap selection:bg-primary/20 selection:text-foreground"
+            style={{
+              fontSize: "15px",
+              lineHeight: "1.7",
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            }}
+            dangerouslySetInnerHTML={{ __html: highlightedText }}
+          />
+        </div>
       </Card>
     </div>
   )
