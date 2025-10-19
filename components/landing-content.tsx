@@ -1,75 +1,92 @@
-"use client"
+"use client";
 
-import { Card } from "@/components/ui/card"
-import { FileText, Search, Download, Zap, Shield, Sparkles, ArrowRight } from "lucide-react"
-import { motion } from "framer-motion"
+import { Card } from "@/components/ui/card";
+import {
+  FileText,
+  Search,
+  Download,
+  Zap,
+  Shield,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 export function LandingContent() {
   const features = [
     {
       icon: FileText,
       title: "Smart Text Extraction",
-      description: "Advanced PDF parsing technology extracts text with perfect formatting and structure preservation.",
+      description:
+        "Advanced PDF parsing technology extracts text with perfect formatting and structure preservation.",
       gradient: "from-purple-500/15 to-violet-500/15",
       borderColor: "border-purple-500/30",
     },
     {
       icon: Search,
       title: "Powerful Search",
-      description: "Find any word or phrase instantly with real-time highlighting and navigation between matches.",
+      description:
+        "Find any word or phrase instantly with real-time highlighting and navigation between matches.",
       gradient: "from-violet-500/15 to-purple-500/15",
       borderColor: "border-violet-500/30",
     },
     {
       icon: Download,
       title: "Export Options",
-      description: "Download extracted text, print documents, or copy to clipboard with a single click.",
+      description:
+        "Download extracted text, print documents, or copy to clipboard with a single click.",
       gradient: "from-purple-600/15 to-indigo-500/15",
       borderColor: "border-purple-600/30",
     },
     {
       icon: Zap,
       title: "Lightning Fast",
-      description: "Process PDFs instantly in your browser. No uploads, no waiting, no server delays.",
+      description:
+        "Process PDFs instantly in your browser. No uploads, no waiting, no server delays.",
       gradient: "from-indigo-500/15 to-purple-500/15",
       borderColor: "border-indigo-500/30",
     },
     {
       icon: Shield,
       title: "100% Private",
-      description: "Your documents never leave your device. All processing happens locally in your browser.",
+      description:
+        "Your documents never leave your device. All processing happens locally in your browser.",
       gradient: "from-purple-500/15 to-fuchsia-500/15",
       borderColor: "border-purple-500/30",
     },
     {
       icon: Sparkles,
       title: "Professional Tools",
-      description: "View modes, line numbers, statistics, and formatting options for professional document analysis.",
+      description:
+        "View modes, line numbers, statistics, and formatting options for professional document analysis.",
       gradient: "from-fuchsia-500/15 to-violet-500/15",
       borderColor: "border-fuchsia-500/30",
     },
-  ]
+  ];
 
   const steps = [
     {
       number: "01",
       title: "Upload Your PDF",
-      description: "Drag and drop or click to select any PDF document from your device.",
+      description:
+        "Drag and drop or click to select any PDF document from your device.",
       icon: FileText,
     },
     {
       number: "02",
       title: "Extract Instantly",
-      description: "Our advanced engine processes your PDF and extracts all text content in seconds.",
+      description:
+        "Our advanced engine processes your PDF and extracts all text content in seconds.",
       icon: Zap,
     },
     {
       number: "03",
       title: "Search & Export",
-      description: "Search through content, view statistics, and export in your preferred format.",
+      description:
+        "Search through content, view statistics, and export in your preferred format.",
       icon: Download,
     },
-  ]
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -80,7 +97,7 @@ export function LandingContent() {
         delayChildren: 0.2,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -92,7 +109,7 @@ export function LandingContent() {
         ease: "easeOut",
       },
     },
-  }
+  };
 
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -110,7 +127,7 @@ export function LandingContent() {
         duration: 0.3,
       },
     },
-  }
+  };
 
   return (
     <div className="space-y-32 mt-24 relative">
@@ -178,7 +195,10 @@ export function LandingContent() {
             >
               Everything you need
             </motion.h2>
-            <motion.p className="text-lg text-primary font-light italic mt-2" variants={itemVariants}>
+            <motion.p
+              className="text-lg text-primary font-light italic mt-2"
+              variants={itemVariants}
+            >
               for professional PDF extraction
             </motion.p>
           </div>
@@ -186,8 +206,8 @@ export function LandingContent() {
             className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto leading-relaxed"
             variants={itemVariants}
           >
-            Powerful tools designed for efficiency, privacy, and ease of use. Extract, search, and analyze your
-            documents with confidence.
+            Powerful tools designed for efficiency, privacy, and ease of use.
+            Extract, search, and analyze your documents with confidence.
           </motion.p>
         </motion.div>
 
@@ -209,8 +229,12 @@ export function LandingContent() {
                     <feature.icon className="h-6 w-6 text-primary" />
                   </motion.div>
                   <div className="space-y-3">
-                    <h3 className="text-xl font-semibold leading-tight">{feature.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed text-sm">{feature.description}</p>
+                    <h3 className="text-xl font-semibold leading-tight">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed text-sm">
+                      {feature.description}
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -241,7 +265,10 @@ export function LandingContent() {
             >
               Simple & Intuitive
             </motion.h2>
-            <motion.p className="text-lg text-primary font-light italic mt-2" variants={itemVariants}>
+            <motion.p
+              className="text-lg text-primary font-light italic mt-2"
+              variants={itemVariants}
+            >
               three steps to success
             </motion.p>
           </div>
@@ -249,34 +276,54 @@ export function LandingContent() {
             className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto leading-relaxed"
             variants={itemVariants}
           >
-            Our streamlined workflow makes PDF extraction effortless. From upload to export, everything is optimized for
-            your productivity.
+            Our streamlined workflow makes PDF extraction effortless. From
+            upload to export, everything is optimized for your productivity.
           </motion.p>
         </motion.div>
 
-        <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10" variants={containerVariants}>
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10"
+          variants={containerVariants}
+        >
           {steps.map((step, index) => (
-            <motion.div key={index} className="relative group" variants={cardVariants} whileHover="hover">
+            <motion.div
+              key={index}
+              className="relative group"
+              variants={cardVariants}
+              whileHover="hover"
+            >
               <div className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 backdrop-blur-sm border border-purple-500/20 rounded-xl p-8 h-full hover:border-purple-500/40 transition-all duration-300">
                 <div className="space-y-6">
                   <div className="flex items-start justify-between">
                     <motion.div
                       className="text-6xl font-bold text-primary/20 font-serif"
                       animate={{ y: [0, -5, 0] }}
-                      transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, delay: index * 0.2 }}
+                      transition={{
+                        duration: 3,
+                        repeat: Number.POSITIVE_INFINITY,
+                        delay: index * 0.2,
+                      }}
                     >
                       {step.number}
                     </motion.div>
                     <motion.div
                       whileHover={{ scale: 1.2, rotate: 10 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 10,
+                      }}
                     >
                       <step.icon className="h-8 w-8 text-primary/60 group-hover:text-primary transition-colors" />
                     </motion.div>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="text-2xl font-semibold leading-tight">{step.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+                    <h3 className="text-2xl font-semibold leading-tight">
+                      {step.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {step.description}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -336,11 +383,18 @@ export function LandingContent() {
 
           <motion.div className="relative z-10" variants={containerVariants}>
             <motion.div className="text-center mb-12" variants={itemVariants}>
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-balance mb-3">Why Choose Us</h2>
-              <p className="text-lg text-muted-foreground">Industry-leading performance and reliability</p>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-balance mb-3">
+                Why Choose Us
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Industry-leading performance and reliability
+              </p>
             </motion.div>
 
-            <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center" variants={containerVariants}>
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
+              variants={containerVariants}
+            >
               {[
                 { value: "100%", label: "Private & Secure" },
                 { value: "<1s", label: "Processing Time" },
@@ -354,13 +408,22 @@ export function LandingContent() {
                   whileHover={{ scale: 1.05 }}
                 >
                   <motion.div
-                    className="text-4xl md:text-5xl font-bold text-primary font-serif"
+                    className={`${
+                      (index === 2 && "relative right-6 md:right-0") ||
+                      (index === 0 && "relative right-2 md:right-0")
+                    }  text-3xl md:text-5xl font-bold text-primary font-serif`}
                     animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: index * 0.2 }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      delay: index * 0.2,
+                    }}
                   >
                     {stat.value}
                   </motion.div>
-                  <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+                  <div className=" text-xs  md:text-sm text-muted-foreground font-medium">
+                    {stat.label}
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
@@ -368,5 +431,5 @@ export function LandingContent() {
         </motion.div>
       </motion.section>
     </div>
-  )
+  );
 }
