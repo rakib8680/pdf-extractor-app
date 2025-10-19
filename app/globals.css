@@ -133,8 +133,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Enhanced smooth transitions and added gradient background */
-    transition: background-color 0.3s ease, color 0.3s ease;
+    /* Enhanced smooth transitions with better easing */
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background-image: var(--gradient-accent);
     background-attachment: fixed;
   }
@@ -181,5 +181,26 @@
     50% {
       opacity: 0.3;
     }
+  }
+
+  /* Added premium glow effect for interactive elements */
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(167, 139, 250, 0.3), 0 0 40px rgba(167, 139, 250, 0.15);
+  }
+
+  /* Added subtle reflection effect */
+  .reflection {
+    position: relative;
+  }
+
+  .reflection::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    pointer-events: none;
   }
 }

@@ -149,30 +149,36 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background transition-theme relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-100/40 via-blue-50/20 to-purple-50/30 dark:from-purple-950/30 dark:via-blue-950/20 dark:to-purple-950/25"></div>
+
         <motion.div
-          className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-primary/30 to-transparent rounded-full blur-3xl"
+          className="absolute -top-48 -right-48 w-96 h-96 bg-gradient-to-br from-primary/35 to-transparent rounded-full blur-3xl"
           animate={{
-            y: [0, 30, 0],
-            x: [0, 20, 0],
+            y: [0, 40, 0],
+            x: [0, 30, 0],
           }}
-          transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
         ></motion.div>
+
         <motion.div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-3xl"
+          className="absolute -bottom-48 -left-48 w-96 h-96 bg-gradient-to-tr from-primary/25 to-transparent rounded-full blur-3xl"
           animate={{
-            y: [0, -30, 0],
-            x: [0, -20, 0],
+            y: [0, -40, 0],
+            x: [0, -30, 0],
           }}
-          transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 1 }}
+          transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 1 }}
         ></motion.div>
+
         <motion.div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-primary/15 to-transparent rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl"
           animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.1, 0.2, 0.1],
+            scale: [1, 1.15, 1],
+            opacity: [0.15, 0.25, 0.15],
           }}
-          transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 2 }}
+          transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 2 }}
         ></motion.div>
+
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5 dark:to-black/20 pointer-events-none"></div>
       </div>
 
       <input ref={fileInputRef} type="file" accept=".pdf" onChange={handleFileInputChange} className="hidden" />
@@ -183,16 +189,16 @@ export default function HomePage() {
         {!extractedText ? (
           <>
             <motion.div
-              className="text-center mb-12"
-              initial={{ opacity: 0, y: 20 }}
+              className="text-center mb-16"
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
             >
               <motion.h1
-                className="text-5xl md:text-6xl font-bold text-balance mb-6 text-foreground"
-                initial={{ opacity: 0, y: 20 }}
+                className="text-5xl md:text-6xl lg:text-7xl font-bold text-balance mb-6 text-foreground leading-tight"
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
               >
                 Extract and Search{" "}
                 <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
@@ -200,10 +206,10 @@ export default function HomePage() {
                 </span>
               </motion.h1>
               <motion.p
-                className="text-xl md:text-2xl text-muted-foreground text-pretty max-w-3xl mx-auto mb-8"
+                className="text-lg md:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto mb-8 leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               >
                 Upload your PDF documents and instantly extract all text content with powerful search capabilities
               </motion.p>
