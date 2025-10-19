@@ -61,14 +61,11 @@ export default function HomePage() {
       const nextIsShort = nextLine && nextLine.split(/\s+/).length <= 4
       const nextStartsWithCapital = nextLine && /^[A-Z]/.test(nextLine)
 
-      // Merge very short lines unless they end with sentence punctuation
       if (isVeryShortLine && !endsWithPunctuation && nextLine && !nextLine.startsWith("---")) {
         currentParagraph += (currentParagraph ? " " : "") + line
       } else if (endsWithComma || (!endsWithPunctuation && !nextStartsWithCapital && nextLine)) {
-        // Continue paragraph if line ends with comma or doesn't end with punctuation
         currentParagraph += (currentParagraph ? " " : "") + line
       } else {
-        // Finish paragraph
         currentParagraph += (currentParagraph ? " " : "") + line
         processedLines.push(currentParagraph.trim())
         currentParagraph = ""
@@ -87,22 +84,15 @@ export default function HomePage() {
     setFileName(file.name)
 
     try {
-      console.log("[v0] Starting PDF processing with unpdf")
-
       const { extractText, getDocumentProxy } = await import("unpdf")
 
       const arrayBuffer = await file.arrayBuffer()
       const uint8Array = new Uint8Array(arrayBuffer)
 
-      console.log("[v0] Loading PDF document")
       const pdf = await getDocumentProxy(uint8Array)
 
-      console.log("[v0] Extracting text from all pages")
       const { totalPages, text } = await extractText(pdf, { mergePages: false })
 
-      console.log("[v0] PDF processed successfully, pages:", totalPages)
-
-      // Format the text with page separators
       let formattedText = ""
       if (Array.isArray(text)) {
         text.forEach((pageText, index) => {
@@ -116,10 +106,9 @@ export default function HomePage() {
 
       const processedText = processExtractedText(formattedText.trim())
 
-      console.log("[v0] Text extraction completed, total length:", processedText.length)
       setExtractedText(processedText)
     } catch (error) {
-      console.error("[v0] Error extracting PDF:", error)
+      console.error("Error extracting PDF:", error)
       alert("Failed to extract PDF content. Please try again with a different PDF file.")
     } finally {
       setIsProcessing(false)
@@ -147,15 +136,12 @@ export default function HomePage() {
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file && file.type === "application/pdf") {
-      // Reset state first
       setExtractedText("")
       setFileName("")
       setSearchQuery("")
       setCurrentMatchIndex(0)
-      // Then process new file
       handleFileUpload(file)
     }
-    // Reset input value to allow selecting the same file again
     event.target.value = ""
   }
 
@@ -175,7 +161,7 @@ export default function HomePage() {
 
       <input ref={fileInputRef} type="file" accept=".pdf" onChange={handleFileInputChange} className="hidden" />
 
-      <Header />
+      <Header showNavigation={!!extractedText} onUploadNew={handleUploadNewPDF} onGoHome={handleReset} />
 
       <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10 flex-1">
         {!extractedText ? (

@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, X, FileText, ChevronUp, ChevronDown, Upload, Home } from "lucide-react"
+import { Search, X, FileText, ChevronUp, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -15,7 +15,7 @@ interface SearchBarProps {
   onNavigateMatch: (index: number) => void
   totalMatches: number
   onUploadNew: () => void
-  onGoHome: () => void // Added onGoHome prop for home button
+  onGoHome: () => void
 }
 
 export function SearchBar({
@@ -26,7 +26,7 @@ export function SearchBar({
   onNavigateMatch,
   totalMatches,
   onUploadNew,
-  onGoHome, // Added onGoHome parameter
+  onGoHome,
 }: SearchBarProps) {
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -46,7 +46,6 @@ export function SearchBar({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Only handle arrow keys when there are search results
       if (searchQuery && totalMatches > 0) {
         if (event.key === "ArrowUp") {
           event.preventDefault()
@@ -58,14 +57,12 @@ export function SearchBar({
       }
     }
 
-    // Add event listener to document for global keyboard navigation
     document.addEventListener("keydown", handleKeyDown)
 
-    // Cleanup event listener on unmount
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
     }
-  }, [searchQuery, totalMatches, currentMatchIndex]) // Dependencies to ensure handlers have latest values
+  }, [searchQuery, totalMatches, currentMatchIndex])
 
   return (
     <div className="relative">
@@ -73,29 +70,7 @@ export function SearchBar({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <FileText className="h-4 w-4" />
-            <span className="font-medium">{fileName}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onGoHome}
-              className="gap-2 transition-theme bg-transparent backdrop-blur-sm border-primary/20 hover:bg-primary/10 cursor-pointer"
-              title="Back to upload"
-            >
-              <Home className="h-4 w-4" />
-              Home
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onUploadNew}
-              className="gap-2 transition-theme bg-transparent backdrop-blur-sm border-primary/20 hover:bg-primary/10 cursor-pointer"
-              title="Upload another PDF"
-            >
-              <Upload className="h-4 w-4" />
-              Upload New
-            </Button>
+            <span className="font-medium truncate">{fileName}</span>
           </div>
         </div>
 
@@ -166,7 +141,7 @@ export function SearchBar({
       </Card>
 
       {searchQuery && totalMatches > 0 && (
-        <div className="fixed top-4 right-4 z-50 bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg p-3 transition-theme border-primary/20">
+        <div className="fixed top-20 right-4 z-50 bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg p-3 transition-theme border-primary/20">
           <div className="flex items-center gap-3">
             <div className="text-sm font-medium">
               {currentMatchIndex + 1} of {totalMatches}
