@@ -158,9 +158,14 @@
     background: var(--gradient-secondary);
   }
 
+  /* Enhanced glassmorphism effect with better backdrop blur and transparency */
   .backdrop-blur-glass {
     backdrop-filter: blur(12px);
     background: oklch(from var(--card) l c h / 0.8);
+  }
+
+  .backdrop-blur-xl {
+    backdrop-filter: blur(20px);
   }
 
   /* Added slower pulse animation for background gradients */
