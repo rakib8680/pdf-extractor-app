@@ -1,39 +1,54 @@
-"use client"
+"use client";
 
-import { FileText, Sun, Moon, Home, Upload } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useTheme } from "@/hooks/use-theme"
-import { useRouter, usePathname } from "next/navigation"
+import { FileText, Sun, Moon, Home, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/hooks/use-theme";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 interface HeaderProps {
-  showNavigation?: boolean
-  onUploadNew?: () => void
-  onGoHome?: () => void
+  showNavigation?: boolean;
+  onUploadNew?: () => void;
+  onGoHome?: () => void;
 }
 
-export function Header({ showNavigation = false, onUploadNew, onGoHome }: HeaderProps) {
-  const { theme, toggleTheme } = useTheme()
-  const router = useRouter()
-  const pathname = usePathname()
+export function Header({
+  showNavigation = false,
+  onUploadNew,
+  onGoHome,
+}: HeaderProps) {
+  const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleHome = () => {
     if (onGoHome) {
-      onGoHome()
+      onGoHome();
     } else {
-      router.push("/")
+      router.push("/");
     }
-  }
+  };
 
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50 transition-theme">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push("/")}>
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => router.push("/")}
+        >
           <div className="p-2 bg-primary/10 rounded-lg transition-theme">
             <FileText className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className="text-xl font-bold">PDF Extractor Pro</h1>
-            <p className="text-sm text-muted-foreground">Professional document processing</p>
+            <p className="text-sm text-muted-foreground">
+              Professional document processing
+            </p>
           </div>
         </div>
 
@@ -68,12 +83,25 @@ export function Header({ showNavigation = false, onUploadNew, onGoHome }: Header
             size="sm"
             onClick={toggleTheme}
             className="text-muted-foreground transition-theme cursor-pointer"
-            title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            aria-label="Toggle theme"
+            title={
+              mounted
+                ? `Switch to ${theme === "dark" ? "light" : "dark"} mode`
+                : "Toggle theme"
+            }
           >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {mounted ? (
+              theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }
